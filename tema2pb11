@@ -1,1 +1,325 @@
+// tema 2 11.cpp : Defines the entry point for the console application.
+//
 
+#include "stdafx.h"
+#include <iostream>
+#include <queue>
+
+using namespace std;
+
+class Nod
+{
+    int info;
+
+public:
+    Nod(int info=0):info(info)
+    {
+
+    }
+    void set(int inf)
+    {
+        this->info=inf;
+    }
+  
+    /*int operator*()
+    {
+        return Nod;
+    }*/
+
+    int get_info()
+    {
+        return info;
+    }
+	virtual void print()
+	{
+		cout<<info<<endl;
+	}
+	virtual Nod *get_st()=0;
+	
+	virtual Nod *get_dr()=0;
+
+	virtual Nod *get_fiu()=0;
+	
+	virtual Nod *get_frate()=0;
+	
+};
+class Nod_ABC:public Nod
+{
+    Nod *st;
+    Nod *dr;
+
+public:
+    Nod_ABC(int info=0, Nod *st=NULL, Nod *dr=NULL)
+    {
+		this->set(info);
+		this->st=st;
+        this->dr=dr;
+    }
+	virtual void print()
+	{
+		cout<<this->get_info()<<" ";
+	}
+	void set_st(int val)
+	{
+		st->set(val);
+	}
+	void set_dr(int val)
+	{
+		dr->set(val);
+	}
+	Nod *get_st()
+	{
+		return st;
+	}
+	Nod *get_dr()
+	{
+		return dr;
+	}
+	  Nod *get_fiu()
+	{
+		return NULL;
+	}
+	 Nod *get_frate()
+	{
+		return NULL;
+	}
+};
+class Nod_fiu_frate:public Nod
+{
+    Nod *fiu;
+	Nod *frate;
+
+public:
+      Nod_fiu_frate(int info=0, Nod *fiu=NULL, Nod *frate=NULL)
+    {
+		this->set(info);
+		this->fiu=fiu;
+        this->frate=frate;
+    }
+	  virtual void print()
+	 {
+		cout<<this->get_info()<<" ";
+		 
+	 }
+	  Nod *get_fiu()
+	{
+		return fiu;
+	}
+	 Nod *get_frate()
+	{
+		return frate;
+	}	
+	 Nod *get_st()
+	{
+		return NULL;
+	}
+	Nod *get_dr()
+	{
+		return NULL;
+	}
+	void set_fiu(int val)
+	{
+		fiu=new Nod_fiu_frate(val);
+		//fiu->set(val);
+
+	}
+	void set_frate(int val)
+	{
+		frate=new Nod_fiu_frate(val);
+		//frate->set(val);
+	}
+	
+};
+class Arbore
+{
+    int nr_noduri;
+
+public:
+    Arbore(int nr):nr_noduri(nr)
+    {
+
+    }
+    virtual ~Arbore()
+    {
+
+    }
+    virtual void print()=0
+	{
+
+	}
+	int get_size()
+	{
+		return nr_noduri;
+	}
+
+	virtual void insert()=0;
+
+};
+class ABC:public Arbore
+{
+	Nod_ABC *rad;
+
+public:
+	ABC(int dim, int val):Arbore(dim)
+	{
+		rad=new Nod_ABC(val);
+	}
+	
+	virtual ~ABC()
+	{
+		delete rad->get_st();
+		delete rad->get_dr();
+		rad=NULL;
+	}
+	
+	virtual void set_rad(int info)
+	{
+		rad->set(info);
+	}
+	 Nod_ABC *get_rad()
+	{
+		return rad;
+	}
+	virtual void print() 
+	{
+		//rad->print();
+	}
+	void print_RSD(Nod *r)
+	{
+		if(r==NULL) return;
+		r->print();
+		print_RSD(r->get_st());
+		print_RSD(r->get_dr());
+
+	};
+	void print_SDR(Nod *r)
+	{
+		if(r==NULL) return;
+		
+		print_RSD(r->get_st());
+		print_RSD(r->get_dr());
+		r->print();
+	}
+	void print_SRD(Nod *r)
+	{
+		if(r==NULL) return;
+		print_RSD(r->get_st());
+		r->print();
+		print_RSD(r->get_dr());
+	}
+
+	virtual void insert()
+	{
+		int val;
+		cout<<"Scrie valoarea de introdus: ";
+		cin>>val;
+		Nod *temp=rad;
+		while(temp!=NULL)
+			if(temp->get_info()<val)
+				temp=temp->get_st();
+			else 
+				temp=temp->get_dr();
+		temp->set(val);
+	}
+};
+class AB_oarecare:public Arbore
+{//Arbore binar oarecare
+	Nod_fiu_frate *rad;
+
+public:
+	AB_oarecare(int dim, int val):Arbore(dim)
+	{
+		rad=new Nod_fiu_frate(val);
+	}
+	
+	virtual ~AB_oarecare()
+	{
+		delete rad->get_fiu();
+		delete rad->get_frate();
+		rad=NULL;
+	}
+
+	Nod_fiu_frate *get_rad()
+	{
+		return rad;
+	}
+	virtual void set_rad(int info)
+	{
+		rad->set(info);
+	}
+	 virtual void print()
+	{
+
+	}
+
+	void BFS()
+	{
+		queue <Nod*> q;
+		q.push(rad);
+
+		while(!q.empty())
+		{
+			Nod *temp=q.front();
+			q.pop();
+			temp->print();
+			if(rad->get_fiu()!=NULL)
+				q.push(rad->get_fiu());
+			if(rad->get_frate()!=NULL)
+				q.push(rad->get_frate());
+		}
+	}
+
+	virtual void insert()
+	{
+		int val;
+		cout<<"Scrie valoarea de introdus: ";
+		cin>>val;
+
+		if(rad!=NULL)
+			{	queue <Nod*> q;
+				q.push(rad);
+
+				while(!q.empty())
+				{
+					Nod *temp=q.front();
+							q.pop();
+					
+					if(rad->get_fiu()!=NULL)
+						q.push(rad->get_fiu());
+					else
+					{
+						rad->set_fiu(val);
+						break;
+					}
+					if(rad->get_frate()!=NULL)
+						q.push(rad->get_frate());
+					else
+					{
+						rad->set_frate(val);
+						break;
+					}
+				}
+			}
+			else
+				{
+					Nod_fiu_frate rad(val);
+
+				}
+		
+	}
+};
+int main()
+{
+	cout<<"ABC:"<<endl;
+	ABC A(1,7);
+	//A.insert();
+	A.print_RSD(A.get_rad());
+	cout<<endl;
+
+	cout<<"AB_oarecare:"<<endl;
+	AB_oarecare B(2,1);
+	B.insert();
+	B.BFS();
+	
+    return 0;
+}
